@@ -1,0 +1,13 @@
+{
+  "name": "boof-bot",
+  "version": "1.0.0",
+  "description": "Reacts with 🍑 whenever a message contains 'boof'.",
+  "main": "boofbot.js",
+  "author": "DZ Liergaard",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "discord.js": "^12.5.3",
+    "save": "^2.4.0",
+    "winston": "^3.3.3"
+  }
+}
