@@ -12,7 +12,7 @@ logger.level = 'debug';
 // Initialize Discord client
 var client = new Discord.Client();
 
-var boofRegex = /\bboof\b/;
+var boofRegex = /\bboof((ing)|(er)|(s))*\b/;
 client.on('ready', () => {
   logger.info('Connected');
   logger.info('Logged in as: ');

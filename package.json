@@ -1,8 +1,8 @@
 {
-  "name": "boof-bot",
+  "name": "react-bot",
   "version": "1.0.0",
-  "description": "Reacts with 🍑 whenever a message contains 'boof'.",
-  "main": "boofbot.js",
+  "description": "Reacts with 🍑 whenever a message contains 'boof'. And other combinations, eventually.",
+  "main": "bot.js",
   "author": "DZ Liergaard",
   "dependencies": {
     "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
