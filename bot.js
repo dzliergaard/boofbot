@@ -14,9 +14,11 @@ logger.level = 'debug';
 // Initialize Discord client
 var client = new Discord.Client();
 
-var boofRegex = /\bboo(o)*f((ing)|(er)|(s)|(bot))*\b/i;
+var boofRegex = /\b(?:(?:un)|(?:de))boo(?:o)*f(?:(?:ing)|(?:er)|(?:s)|(?:bot)|(?:master)|(?:y))*\b/i;
 var indeedRegex = /\bindeed\b/i;
+var defineRegex = /^\!boof define/i;
 var indeedEmoji;
+var booflink = "https://www.urbandictionary.com/define.php?term=Boof";
 client.on('ready', () => {
   logger.info('Connected');
   logger.info('Logged in as: ');
@@ -30,6 +32,11 @@ client.on('ready', () => {
   });
 });
 client.on('message', message => {
+  var defineMatches = defineRegex.exec(message.content);
+  if (defineMatches && defineMatches.length > 0) {
+    message.channel.send(booflink);
+    return;
+  }
   // Object.keys(messageConfig).forEach((key) => {
   //   var regex = RegExp(key.);
   //   logger.info("Checking for match on " + regex);
