@@ -1,4 +1,5 @@
 {
-  "\bbo{2,}f(?:(?:ing)|(?:er)|(?:s)|(?:bot))*\b": "🍑",
-  "indeed": "\bindeed\b"
+  "\\b(?:(?:un)|(?:de))*boo(?:o)*f(?:(?:ing)|(?:ed)|(?:er)|(?:s)|(?:bot)|(?:master)|(?:y))*\\b": "🍑",
+  "\\bindeed\\b": "indeed",
+  "\\bpeach\\b": "🍑"
 }
