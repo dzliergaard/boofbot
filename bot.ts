@@ -1,4 +1,4 @@
-import { Client, GuildEmoji, Message } from "discord.js";
+import { Client, Message } from "discord.js";
 var logger = require('winston');
 require('dotenv').config();
 var messageConfig = require('./config.json');
@@ -13,12 +13,12 @@ logger.level = 'debug';
 const client = new Client();
 
 // Login to Discord with your client's token
-client.login(process.env.token);
+client.login(process.env.TOKEN);
 
 // var indeedEmoji: GuildEmoji;
 var emojiCodes = {};
-const indeedRegex = /\bindeed\b/i;
-const defineRegex = /^\!boof define/i;
+// TODO: Re-add booflink for !boof define
+var defineRegex = /^\!boof define/i;
 const booflink = "https://www.urbandictionary.com/define.php?term=Boof";
 
 // When the client is ready, run this code (only once)
@@ -45,16 +45,36 @@ client.once('ready', () => {
   logger.info('Emoji codes: ' + JSON.stringify(emojiCodes));
 });
 
+// TODO: Figure out slash commands.
+// client.on('interactionCreate', async (interaction) => {
+//   logger.info("Checking " + interaction + " for command 'defineboof.");
+//   if (!interaction.isCommand()) return;
+
+//   logger.info("Interaction " + interaction + " is a command.");
+//   const { commandName } = interaction;
+
+//   if (commandName === 'defineboof') {
+//     logger.info("Interaction " + interaction + " is 'defineboof'.");
+//     await interaction.reply(booflink);
+//   }
+// });
 
 client.on('message', (message) => _handleMessage(message));
 
 var _devHandleMessage = function (message: Message) {
-  logger.info("Handling message in guild " + message.guild.name);
+  if (message.author.id == client.user.id) {
+    return;
+  }
+
+  var defineMatches = defineRegex.exec(message.content);
+  if (defineMatches && defineMatches.length > 0) {
+    message.channel.send(booflink);
+    return;
+  }
   Object.keys(emojiCodes).forEach((key) => {
     var regex = RegExp(key, 'i');
     var matches = regex.exec(message.content);
     if (matches && matches.length > 0) {
-      logger.info('Reacting to ' + message.content + ' with ' + JSON.stringify(emojiCodes[key]));
       message.react(emojiCodes[key]).catch((reason) => {
         logger.error("Could not react to message: no emoji matching " + emojiCodes[key] + " found. " + reason);
       });
