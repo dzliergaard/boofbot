@@ -1,5 +1,7 @@
 {
   "\\b(?:(?:un)|(?:de))*boo(?:o)*f(?:(?:ing)|(?:ed)|(?:er)|(?:s)|(?:bot)|(?:master)|(?:y))*\\b": "🍑",
   "\\bindeed\\b": "indeed",
-  "\\bpeach\\b": "🍑"
+  "\\bpeach\\b": "🍑",
+  "\\b(?:(?:dab)|(?:gotem))\\b": "dabsotheydontseeucryin",
+  "\\bfml\\b": "doingGr8"
 }

@@ -1,4 +1,5 @@
-import { Client, Message } from "discord.js";
+import fs = require('fs');
+import { Client, Collection, Intents, Message } from "discord.js";
 var logger = require('winston');
 require('dotenv').config();
 var messageConfig = require('./config.json');
@@ -10,16 +11,13 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const client = new Client();
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS] });
 
 // Login to Discord with your client's token
 client.login(process.env.TOKEN);
 
-// var indeedEmoji: GuildEmoji;
+var commands = new Collection<String, any>();
 var emojiCodes = {};
-// TODO: Re-add booflink for !boof define
-var defineRegex = /^\!boof define/i;
-const booflink = "https://www.urbandictionary.com/define.php?term=Boof";
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
@@ -33,7 +31,7 @@ client.once('ready', () => {
     var found = client.emojis.cache.find((emoji) => {
       var regex = new RegExp(value);
       if (regex.exec(emoji.name)) {
-        logger.info('Emoji ' + emoji.name + ' matches regex ' + value);
+        logger.info(`Emoji ${emoji.name} matches regex ${value} for ${key}`);
         return true;
       }
       return false;
@@ -42,56 +40,54 @@ client.once('ready', () => {
       emojiCodes[key] = found;
     }
   });
-  logger.info('Emoji codes: ' + JSON.stringify(emojiCodes));
+
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+  logger.info(`Registering ${commandFiles.length} commands.`);
+  for (var index in commandFiles) {
+    const file = commandFiles[index];
+    var command = require(`./commands/${file}`);
+    commands.set(command.data.name, command);
+  }
 });
 
-// TODO: Figure out slash commands.
-// client.on('interactionCreate', async (interaction) => {
-//   logger.info("Checking " + interaction + " for command 'defineboof.");
-//   if (!interaction.isCommand()) return;
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return;
+  logger.info(`Processing interaction ${interaction.commandName}`);
 
-//   logger.info("Interaction " + interaction + " is a command.");
-//   const { commandName } = interaction;
+  const command = commands.get(interaction.commandName);
+  if (!command) return;
 
-//   if (commandName === 'defineboof') {
-//     logger.info("Interaction " + interaction + " is 'defineboof'.");
-//     await interaction.reply(booflink);
-//   }
-// });
+  try {
+    if (interaction.guild.name == "Liergaard's dev server" && command.devExecute != undefined) {
+      logger.info(`Using ${interaction.commandName}.devExecute.`);
+      return await command.devExecute(interaction);
+    }
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+  }
+});
 
-client.on('message', (message) => _handleMessage(message));
+client.on('messageCreate', (message) => {
+  _handleMessage(message);
+});
 
-var _devHandleMessage = function (message: Message) {
+var _handleMessage = function (message: Message) {
   if (message.author.id == client.user.id) {
     return;
   }
-
-  var defineMatches = defineRegex.exec(message.content);
-  if (defineMatches && defineMatches.length > 0) {
-    message.channel.send(booflink);
-    return;
+  if (message.guild.name == "Liergaard's dev server") {
+    logger.info(`Processing message: ${message.content} in server ${message.guildId}`);
   }
+
   Object.keys(emojiCodes).forEach((key) => {
     var regex = RegExp(key, 'i');
     var matches = regex.exec(message.content);
     if (matches && matches.length > 0) {
       message.react(emojiCodes[key]).catch((reason) => {
-        logger.error("Could not react to message: no emoji matching " + emojiCodes[key] + " found. " + reason);
+        logger.error(`Could not react to message: no emoji matching ${emojiCodes[key]} found. ${reason}.`);
       });
-    }
-  });
-}
-
-
-var _handleMessage = function (message: Message) {
-  if (message.guild.name == "Liergaard's dev server") {
-    return _devHandleMessage(message);
-  }
-  Object.keys(messageConfig).forEach((key) => {
-    var regex = RegExp(key, 'i');
-    var matches = regex.exec(message.content);
-    if (matches && matches.length > 0) {
-      message.react(messageConfig[key]);
     }
   });
 }
