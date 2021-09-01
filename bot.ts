@@ -1,8 +1,9 @@
 import fs = require('fs');
-import { Client, Collection, Intents, Message } from "discord.js";
+import { ApplicationCommandPermissionData, Client, Collection, FetchApplicationCommandOptions, Intents, Message } from "discord.js";
+import { SlashCommandBuilder } from '@discordjs/builders';
 var logger = require('winston');
 require('dotenv').config();
-var messageConfig = require('./config.json');
+var messageConfig = require('./react-config.json');
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -11,7 +12,14 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS] });
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+  ]
+});
+
 
 // Login to Discord with your client's token
 client.login(process.env.TOKEN);
@@ -20,9 +28,7 @@ var commands = new Collection<String, any>();
 var emojiCodes = {};
 
 // When the client is ready, run this code (only once)
-client.once('ready', () => {
-  logger.info('Ready!');
-  logger.info('Finding react emojis for keys.');
+client.once('ready', async () => {
   Object.keys(messageConfig).forEach((key) => {
     var value = messageConfig[key];
     // Emoji codes match their values by default, assuming they are unicode.
@@ -31,7 +37,6 @@ client.once('ready', () => {
     var found = client.emojis.cache.find((emoji) => {
       var regex = new RegExp(value);
       if (regex.exec(emoji.name)) {
-        logger.info(`Emoji ${emoji.name} matches regex ${value} for ${key}`);
         return true;
       }
       return false;
@@ -41,13 +46,29 @@ client.once('ready', () => {
     }
   });
 
-  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-  logger.info(`Registering ${commandFiles.length} commands.`);
-  for (var index in commandFiles) {
-    const file = commandFiles[index];
-    var command = require(`./commands/${file}`);
-    commands.set(command.data.name, command);
-  }
+  await client.application.fetch().then(async (application) => {
+    if (!application?.owner) await application?.fetch();
+    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+    logger.info(`Registering ${commandFiles.length} command files.`);
+    var guild = client.guilds.cache.get(process.env.GUILDID);
+    for (var index in commandFiles) {
+      const file = commandFiles[index];
+      var commandFile = require(`./commands/${file}`);
+      const command: SlashCommandBuilder = commandFile.data;
+      commands.set(command.name, commandFile);
+      const builtCommand = await application.commands.create({
+        name: command.name,
+        description: command.description,
+        defaultPermission: command.defaultPermission,
+      });
+
+      // if (commandFile.permissions) {
+      //   await builtCommand.permissions.add({ permissions: commandFile.permissions });
+      //   logger.info(`Permissions set for command ${builtCommand.id}`);
+      // }
+    }
+  });
+  logger.info('Ready!');
 });
 
 client.on('interactionCreate', async interaction => {

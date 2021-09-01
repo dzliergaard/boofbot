@@ -21,7 +21,7 @@ const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
       { body: commands },
     );
 
-    console.log('Successfully registered ' + commands.length + ' application commands.');
+    console.log(`Successfully registered ${commands.length} application commands to guild ${process.env.GUILDID}.`);
   } catch (error) {
     console.error(error);
   }
