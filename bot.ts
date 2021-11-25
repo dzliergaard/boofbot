@@ -1,9 +1,9 @@
 import fs = require('fs');
-import { ApplicationCommandPermissionData, Client, Collection, FetchApplicationCommandOptions, Intents, Message } from "discord.js";
+import { Client, Collection, Intents, Message } from "discord.js";
 import { SlashCommandBuilder } from '@discordjs/builders';
 var logger = require('winston');
-require('dotenv').config();
 var messageConfig = require('./react-config.json');
+import { guildID, token } from './config';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -22,7 +22,7 @@ const client = new Client({
 
 
 // Login to Discord with your client's token
-client.login(process.env.TOKEN);
+client.login(token);
 
 var commands = new Collection<String, any>();
 var emojiCodes = {};
@@ -50,7 +50,6 @@ client.once('ready', async () => {
     if (!application?.owner) await application?.fetch();
     const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
     logger.info(`Registering ${commandFiles.length} command files.`);
-    var guild = client.guilds.cache.get(process.env.GUILDID);
     for (var index in commandFiles) {
       const file = commandFiles[index];
       var commandFile = require(`./commands/${file}`);
@@ -61,12 +60,35 @@ client.once('ready', async () => {
         description: command.description,
         defaultPermission: command.defaultPermission,
       });
-
-      // if (commandFile.permissions) {
-      //   await builtCommand.permissions.add({ permissions: commandFile.permissions });
-      //   logger.info(`Permissions set for command ${builtCommand.id}`);
-      // }
+      logger.info(`Created command ${builtCommand.name}/${builtCommand.id}`);
     }
+
+    await client.guilds.cache.get(guildID)?.commands.permissions.set(
+      {
+        command: "882368495512338452",
+        permissions: [
+          {
+            id: '722446885423546420',
+            type: 'ROLE',
+            permission: true,
+          },
+          {
+            id: '881371527273144330',
+            type: 'ROLE',
+            permission: true,
+          },
+          {
+            id: '590690199554752523',
+            type: 'ROLE',
+            permission: true,
+          },
+          {
+            id: '590693611151294464',
+            type: 'ROLE',
+            permission: true,
+          },
+        ],
+      });
   });
   logger.info('Ready!');
 });
@@ -86,7 +108,9 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    await interaction.reply({
+      content: 'There was an error while executing this command!', ephemeral: true
+    });
   }
 });
 
@@ -100,6 +124,10 @@ var _handleMessage = function (message: Message) {
   }
   if (message.guild.name == "Liergaard's dev server") {
     logger.info(`Processing message: ${message.content} in server ${message.guildId}`);
+  }
+
+  if (message.content.match(/\bgood bots?\b/i)) {
+    message.reply("🍑");
   }
 
   Object.keys(emojiCodes).forEach((key) => {

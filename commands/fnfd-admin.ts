@@ -15,12 +15,21 @@ module.exports = {
       .setName("mark-answered")
       .setDescription("Mark question(s) as answered. Tyrants/owners only.")
       .addIntegerOption(option => option.setName('index')
-        .setDescription("Index of the question as returned by `/fnfd list`.")
+        .setDescription("Index of the question to mark as answered as returned by `/fnfd list`.")
+        .setRequired(true)))
+    .addSubcommand(new SlashCommandSubcommandBuilder()
+      .setName("delete")
+      .setDescription("Banish a question for being stupid.")
+      .addIntegerOption(option => option.setName('index')
+        .setDescription("Index of the question to banish as returned by `/fnfd list`.")
         .setRequired(true))),
   async execute(interaction: CommandInteraction) {
     logger.info(`Command options: ${JSON.stringify(interaction.options.getSubcommand())}`);
     await interaction.deferReply();
     switch (interaction.options.getSubcommand()) {
+      case 'delete':
+        _deleteQuestion(interaction);
+        break;
       case 'mark-answered':
         _markAnswered(interaction);
         break;
@@ -29,29 +38,24 @@ module.exports = {
         break;
     }
   },
-  permissions: [
-    {
-      id: '722446885423546420',
-      type: 'ROLE',
-      permission: true,
-    },
-    {
-      id: '881371527273144330',
-      type: 'ROLE',
-      permission: true,
-    },
-    {
-      id: '590690199554752523',
-      type: 'ROLE',
-      permission: true,
-    },
-  ],
+}
+
+async function _deleteQuestion(interaction: CommandInteraction) {
+  var index = interaction.options.getInteger('index') - 1;
+
+  var docs = await unansweredCollection.listDocuments();
+  if (index < 0 || index >= docs.length) {
+    await interaction.editReply(`No question index ${index + 1} in questions list.`)
+    return;
+  }
+
+  await docs.at(index).delete();
+
+  await interaction.editReply(`Banished ${interaction.options.getInteger('index')} for being a bad question.`);
 }
 
 async function _markAnswered(interaction: CommandInteraction) {
-  var index = interaction.options.getInteger('index');
-
-  index--;
+  var index = interaction.options.getInteger('index') - 1;
 
   var docs = await unansweredCollection.listDocuments();
   if (index < 0 || index >= docs.length) {
