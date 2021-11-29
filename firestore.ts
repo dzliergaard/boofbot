@@ -144,7 +144,7 @@ function initializeOptions() {
   const xhr = new XMLHttpRequest();
   getDownloadURL(allModelsRef).then(async (url) => {
     logger.info(`Download url for allmodels: ${url}`);
-    xhr.responseType = 'blob';
+    // xhr.responseType = 'blob';
     xhr.onload = async () => {
       const blob = xhr.responseText;
       allModelsJson = JSON.parse(blob);

@@ -60,11 +60,10 @@ async function _addQuestion(interaction: CommandInteraction) {
     logger.info(`Error executing document update: ${error}`);
     throw error;
   });
-  await interaction.editReply(`${interaction.user.username} added question: ${questionsData.text}!`)
+  await interaction.editReply(`${interaction.user.username} added question: ${questionsData.text}`)
 }
 
 async function _listQuestions(interaction: CommandInteraction) {
-  // Add dates to questions without dates.
   var getAnswered = interaction.options.getBoolean('answered');
   var query = (getAnswered ? answeredCollection : unansweredCollection).orderBy('added');
   var result = await query.get();
