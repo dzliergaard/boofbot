@@ -134,11 +134,22 @@ const exceptions = [
   "Sun Quiang"
 ];
 
-if (fs.existsSync('modelList.json')) {
-  fs.unlinkSync('modelList.json');
-}
+// if (fs.existsSync('modelList.json')) {
+//   fs.unlinkSync('modelList.json');
+// }
 
 function initializeOptions() {
+  if (Object.keys(shipCharacters).length > 0) {
+    return;
+  }
+  if (fs.existsSync('modelList.json')) {
+    var modelData = fs.readFileSync('modelList.json', { encoding: "utf8" });
+    var modelDataJson = JSON.parse(modelData);
+    Object.keys(modelDataJson).forEach((key) => {
+      shipCharacters[key] = modelDataJson[key];
+    });
+    return;
+  }
   const allModelsRef = ref(storage, 'gs://m3e-crew-builder-22534.appspot.com/allmodels-app-titles.json');
   var allModelsJson = {};
   const xhr = new XMLHttpRequest();

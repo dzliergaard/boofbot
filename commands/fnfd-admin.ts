@@ -16,7 +16,10 @@ module.exports = {
       .setDescription("Mark question(s) as answered. Tyrants/owners only.")
       .addIntegerOption(option => option.setName('index')
         .setDescription("Index of the question to mark as answered as returned by `/fnfd list`.")
-        .setRequired(true)))
+        .setRequired(true))
+      .addBooleanOption(option => option.setName('unmark')
+        .setDescription('Set to true to mark an answered question as unanswered.'))
+    )
     .addSubcommand(new SlashCommandSubcommandBuilder()
       .setName("delete")
       .setDescription("Banish a question for being stupid.")
@@ -41,33 +44,45 @@ module.exports = {
 }
 
 async function _deleteQuestion(interaction: CommandInteraction) {
-  var index = interaction.options.getInteger('index') - 1;
+  const setUnanswered = interaction.options.getBoolean('unmark') ?? false;
 
-  var docs = await unansweredCollection.listDocuments();
+  var query = (setUnanswered ? answeredCollection : unansweredCollection).orderBy('added');
+  var result = await query.get();
+  const docs = result.docs;
+  const inputIndex = interaction.options.getInteger('index');
+  const index = inputIndex - 1;
+
   if (index < 0 || index >= docs.length) {
-    await interaction.editReply(`No question index ${index + 1} in questions list.`)
+    await interaction.editReply(`No question index ${inputIndex} in questions list.`)
     return;
   }
 
-  await docs.at(index).delete();
+  await docs.at(index).ref.delete();
 
   await interaction.editReply(`Banished ${interaction.options.getInteger('index')} for being a bad question.`);
 }
 
 async function _markAnswered(interaction: CommandInteraction) {
-  var index = interaction.options.getInteger('index') - 1;
+  const setUnanswered = interaction.options.getBoolean('unmark') ?? false;
 
-  var docs = await unansweredCollection.listDocuments();
+  var query = (setUnanswered ? answeredCollection : unansweredCollection).orderBy('added');
+  var result = await query.get();
+  const docs = result.docs;
+  const inputIndex = interaction.options.getInteger('index');
+  const index = inputIndex - 1;
+
   if (index < 0 || index >= docs.length) {
-    await interaction.editReply(`No question index ${index + 1} in questions list.`)
+    await interaction.editReply(`No question index ${inputIndex} in questions list.`)
     return;
   }
 
-  var doc = await docs.at(index).get();
-  var question = doc.data();
+  var question = docs.at(index);
 
-  await answeredCollection.doc().set(question);
-  await docs.at(index).delete();
+  const outputCollection = (setUnanswered ? unansweredCollection : answeredCollection);
 
-  await interaction.editReply(`Marked question ${interaction.options.getInteger('index')} as answered.`);
+  await outputCollection.doc().set(question.data());
+  await question.ref.delete();
+
+  await interaction.editReply(`Marked question ${inputIndex} as answered.`);
+
 }
