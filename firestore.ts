@@ -42,7 +42,7 @@ export const unansweredCollection = questionsDoc.collection("unanswered");
 export const answeredCollection = questionsDoc.collection("answered");
 export const shipCharacters = {};
 
-const exceptions = [
+const allowedEnforcers = [
   "Angelica Durand",
   "The Beast Within",
   "Ferdinand Vogel",
@@ -134,10 +134,6 @@ const exceptions = [
   "Sun Quiang"
 ];
 
-// if (fs.existsSync('modelList.json')) {
-//   fs.unlinkSync('modelList.json');
-// }
-
 function initializeOptions() {
   if (Object.keys(shipCharacters).length > 0) {
     return;
@@ -163,7 +159,7 @@ function initializeOptions() {
       Object.keys(allModelsJson['units']).forEach((name) => {
         var character = allModelsJson['units'][name];
         if (character['station'] == 'Minion' || character['station'] == 'Enforcer') {
-          if (exceptions.indexOf(name) < 0) {
+          if (allowedEnforcers.indexOf(name) < 0) {
             return;
           }
         }
@@ -186,25 +182,8 @@ function initializeOptions() {
 
 initializeOptions();
 
-/// Initialize the options of characters to ship or FMK.
-export async function initializeOptionsAsync() {
-  if (Object.keys(shipCharacters).length > 0) {
-    return;
-  }
-  // Read from modelList.json if it exists, otherwise get data from models file.
-  if (fs.existsSync('modelList.json')) {
-    var modelData = fs.readFileSync('modelList.json', { encoding: "utf8" });
-    var modelDataJson = JSON.parse(modelData);
-    Object.keys(modelDataJson).forEach((key) => {
-      shipCharacters[key] = modelDataJson[key];
-    });
-    return;
-  }
-}
-
 module.exports = {
   answeredCollection: answeredCollection,
   unansweredCollection: unansweredCollection,
-  initializeOptionsAsync: initializeOptionsAsync,
   shipCharacters: shipCharacters,
 };

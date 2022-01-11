@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { initializeOptionsAsync, shipCharacters } from '../firestore';
+import { shipCharacters } from '../firestore';
 var logger = require('winston');
 
 module.exports = {
@@ -8,7 +8,6 @@ module.exports = {
     .setName('bwbb')
     .setDescription('Generates a random Bed/Wed/Behead trio and also beheads Nellie.'),
   async execute(interaction: CommandInteraction) {
-    await initializeOptionsAsync();
     var options = Object.keys(shipCharacters);
     var count = options.length;
     var indOne = indOne = Math.floor((Math.random() * count));

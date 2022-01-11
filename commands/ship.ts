@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { initializeOptionsAsync, shipCharacters } from '../firestore';
+import { shipCharacters } from '../firestore';
 import { ref, getDownloadURL } from "firebase/storage";
 var logger = require('winston');
 
@@ -36,7 +36,6 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction: CommandInteraction) {
-    await initializeOptionsAsync();
     var options = Object.keys(shipCharacters);
     var count = options.length;
     var charOne = interaction.options.getString("personone");
