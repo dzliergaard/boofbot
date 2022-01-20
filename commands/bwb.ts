@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { shipCharacters } from '../firestore';
+import { modelsInfo } from '../firestore';
 var logger = require('winston');
 
 module.exports = {
@@ -8,21 +8,11 @@ module.exports = {
     .setName('bwb')
     .setDescription('Generates a random Bed/Wed/Behead trio.'),
   async execute(interaction: CommandInteraction) {
-    var options = Object.keys(shipCharacters);
-    var count = options.length;
-    var indOne = indOne = Math.floor((Math.random() * count));
-    var characters = [];
-    var fileNames = [];
-    while (characters.length < 3) {
-      var ind = Math.floor((Math.random() * count));
-      var character = options[ind];
-      if (characters.indexOf(character) >= 0) {
-        continue;
-      }
-      characters.push(character);
-      fileNames.push(shipCharacters[character]);
-    }
-    var text = `Bed/Wed/Behead:\n${characters[0]}\n${characters[1]}\n${characters[2]}`;
-    await interaction.reply({ content: text, files: fileNames });
+    const characters = modelsInfo.getUniqueCharacters(3);
+    const nameText = characters.map((char) => char.name).join('\n');
+    const text = `Bed/Wed/Behead:\n${nameText}`;
+    await interaction.reply({ content: text });
+    const fileNames = characters.map((character) => character.randomImage());
+    await interaction.editReply({ files: fileNames });
   },
 };

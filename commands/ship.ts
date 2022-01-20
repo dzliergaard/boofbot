@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { shipCharacters } from '../firestore';
-import { ref, getDownloadURL } from "firebase/storage";
+import { modelsInfo } from '../firestore';
 var logger = require('winston');
 
 const intros = [
@@ -36,35 +35,23 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction: CommandInteraction) {
-    var options = Object.keys(shipCharacters);
-    var count = options.length;
     var charOne = interaction.options.getString("personone");
-    var indOne = -1;
-    if (!charOne) {
-      indOne = Math.floor((Math.random() * count));
-      charOne = options[indOne];
+    const getCharacters = charOne ? 1 : 2;
+    const characters = modelsInfo.getUniqueCharacters(getCharacters, true);
+    const names = [];
+    if (charOne) {
+      names.push(charOne);
     }
-    var indTwo = indOne;
-    var charTwo = charOne;
-    while (charOne == charTwo) {
-      indTwo = Math.floor((Math.random() * count));
-      charTwo = options[indTwo];
-    }
+    characters.forEach((character) => names.push(character.name));
 
     var emoji = '♥'
     if (Math.random() < .3) {
       emoji = '🍆';
     }
-    var text = `${_randomIntro()}\n${charOne} ${emoji} ${charTwo}`;
+    const text = `${_randomIntro()}\n${names[0]} ${emoji} ${names[1]}`;
     await interaction.reply(text);
 
-    var fileNames = [];
-    if (shipCharacters[charOne]) {
-      fileNames.push(shipCharacters[charOne]);
-    }
-    if (shipCharacters[charTwo]) {
-      fileNames.push(shipCharacters[charTwo]);
-    }
+    const fileNames = characters.map((character) => character.randomImage());
     if (fileNames.length == 0) {
       return;
     }

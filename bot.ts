@@ -60,35 +60,35 @@ client.once('ready', async () => {
         description: command.description,
         defaultPermission: command.defaultPermission,
       });
-      logger.info(`Created command ${builtCommand.name}/${builtCommand.id}`);
+      logger.info(`Registered command ${builtCommand.name}/${builtCommand.id}`);
     }
 
-    await client.guilds.cache.get(guildID)?.commands.permissions.set(
-      {
-        command: "882368495512338452",
-        permissions: [
-          {
-            id: '722446885423546420',
-            type: 'ROLE',
-            permission: true,
-          },
-          {
-            id: '881371527273144330',
-            type: 'ROLE',
-            permission: true,
-          },
-          {
-            id: '590690199554752523',
-            type: 'ROLE',
-            permission: true,
-          },
-          {
-            id: '590693611151294464',
-            type: 'ROLE',
-            permission: true,
-          },
-        ],
-      });
+    // await client.guilds.cache.get(guildID)?.commands.permissions.set(
+    //   {
+    //     command: "882368495512338452",
+    //     permissions: [
+    //       {
+    //         id: '722446885423546420',
+    //         type: 'ROLE',
+    //         permission: true,
+    //       },
+    //       {
+    //         id: '881371527273144330',
+    //         type: 'ROLE',
+    //         permission: true,
+    //       },
+    //       {
+    //         id: '590690199554752523',
+    //         type: 'ROLE',
+    //         permission: true,
+    //       },
+    //       {
+    //         id: '590693611151294464',
+    //         type: 'ROLE',
+    //         permission: true,
+    //       },
+    //     ],
+    //   });
   });
   logger.info('Ready!');
 });

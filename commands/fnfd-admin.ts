@@ -26,6 +26,28 @@ module.exports = {
       .addIntegerOption(option => option.setName('index')
         .setDescription("Index of the question to banish as returned by `/fnfd list`.")
         .setRequired(true))),
+  permissions: [
+    {
+      id: '722446885423546420',
+      type: 1,
+      permission: true,
+    },
+    {
+      id: '881371527273144330',
+      type: 1,
+      permission: true,
+    },
+    {
+      id: '590690199554752523',
+      type: 1,
+      permission: true,
+    },
+    {
+      id: '590693611151294464',
+      type: 1,
+      permission: true,
+    },
+  ],
   async execute(interaction: CommandInteraction) {
     logger.info(`Command options: ${JSON.stringify(interaction.options.getSubcommand())}`);
     await interaction.deferReply();
