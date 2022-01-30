@@ -25,11 +25,13 @@ module.exports = {
     if (!modelName) {
       randomModel = modelsInfo.getUniqueCharacters(1)[0];
       modelName = randomModel.name;
+    } else if (modelsInfo.models[modelName]) {
+      randomModel = modelsInfo.models[modelName];
     }
 
     var keyword = inputKeyword ?? random(modelsInfo.keywords);
 
-    if (randomModel) {
+    if (randomModel && !inputKeyword) {
       if (randomModel.keywords) {
         var i = 0;
         while (randomModel.keywords.indexOf(keyword) >= 0 && i++ < 10) {
@@ -43,6 +45,12 @@ module.exports = {
       }
     }
 
+    if (modelName == inputModel) {
+      modelName = `${modelName}*`;
+    }
+    if (keyword == inputKeyword) {
+      keyword = `${keyword}*`;
+    }
     const text = `Give ${modelName} the ${keyword} keyword you Cowards!`;
     await interaction.reply(text);
     if (randomModel) {

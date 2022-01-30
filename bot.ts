@@ -62,40 +62,16 @@ client.once('ready', async () => {
       });
       logger.info(`Registered command ${builtCommand.name}/${builtCommand.id}`);
     }
-
-    // await client.guilds.cache.get(guildID)?.commands.permissions.set(
-    //   {
-    //     command: "882368495512338452",
-    //     permissions: [
-    //       {
-    //         id: '722446885423546420',
-    //         type: 'ROLE',
-    //         permission: true,
-    //       },
-    //       {
-    //         id: '881371527273144330',
-    //         type: 'ROLE',
-    //         permission: true,
-    //       },
-    //       {
-    //         id: '590690199554752523',
-    //         type: 'ROLE',
-    //         permission: true,
-    //       },
-    //       {
-    //         id: '590693611151294464',
-    //         type: 'ROLE',
-    //         permission: true,
-    //       },
-    //     ],
-    //   });
   });
   logger.info('Ready!');
 });
 
+var lastInteraction = new Date();
+lastInteraction.setMinutes(lastInteraction.getMinutes() - 5);
+
 client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
-  logger.info(`Processing interaction ${interaction.commandName}`);
+  logger.info(`Processing interaction ${interaction.commandName} with options ${JSON.stringify(interaction.options)}`);
 
   const command = commands.get(interaction.commandName);
   if (!command) return;
@@ -106,6 +82,7 @@ client.on('interactionCreate', async interaction => {
       return await command.devExecute(interaction);
     }
     await command.execute(interaction);
+    lastInteraction = new Date();
   } catch (error) {
     console.error(error);
     await interaction.reply({
@@ -127,7 +104,11 @@ var _handleMessage = function (message: Message) {
   }
 
   if (message.content.match(/\bgood bots?\b/i)) {
-    message.reply("🍑");
+    const now = new Date();
+    const diff = now.valueOf() - lastInteraction.valueOf();
+    if (diff < 5 * 60 * 1000 /* 5 minutes */) {
+      message.reply("🍑");
+    }
   }
 
   Object.keys(emojiCodes).forEach((key) => {
@@ -137,6 +118,7 @@ var _handleMessage = function (message: Message) {
       message.react(emojiCodes[key]).catch((reason) => {
         logger.error(`Could not react to message: no emoji matching ${emojiCodes[key]} found. ${reason}.`);
       });
+      lastInteraction = new Date();
     }
   });
 }

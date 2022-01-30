@@ -2,7 +2,7 @@ import fs = require('fs');
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { clientID, guildID, token } from './config';
-// import { Client, Intents } from 'discord.js';
+// import { ApplicationCommand, Client, GuildResolvable, Intents } from 'discord.js';
 
 const commands = [];
 const permissions = {};
@@ -19,7 +19,7 @@ for (const file of commandFiles) {
 const rest = new REST({ version: '9' }).setToken(token);
 
 
-// Get existing commands.
+// // Get existing commands.
 // const client = new Client({
 //   intents: [
 //     Intents.FLAGS.GUILDS,
@@ -29,7 +29,7 @@ const rest = new REST({ version: '9' }).setToken(token);
 // });
 
 
-// Login to Discord with your client's token
+// // Login to Discord with your client's token
 // client.login(token);
 
 // client.once('ready', async () => {
@@ -59,7 +59,7 @@ const rest = new REST({ version: '9' }).setToken(token);
 
 (async () => {
   try {
-    const response = await rest.put(
+    const response: any = await rest.put(
       Routes.applicationGuildCommands(clientID, guildID),
       { body: commands },
     );
