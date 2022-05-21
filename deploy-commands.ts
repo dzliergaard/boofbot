@@ -26,7 +26,7 @@ const rest = new REST({ version: '9' }).setToken(token);
 
     console.log(`Successfully registered ${commands.length} application commands to guild ${guildID}`);
 
-    response.forEach(async (command) => {
+    response.forEach(async (command: { name: string | number; id: string; }) => {
       if (permissions[command.name]) {
 
         var permissionsResponse = await rest.put(

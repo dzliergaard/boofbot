@@ -55,12 +55,12 @@ client.once('ready', async () => {
       var commandFile = require(`./commands/${file}`);
       const command: SlashCommandBuilder = commandFile.data;
       commands.set(command.name, commandFile);
-      const builtCommand = await application.commands.create({
-        name: command.name,
-        description: command.description,
-        defaultPermission: command.defaultPermission,
-      });
-      logger.info(`Registered command ${builtCommand.name}/${builtCommand.id}`);
+      // const builtCommand = await application.commands.create({
+      //   name: command.name,
+      //   description: command.description,
+      //   defaultPermission: command.defaultPermission,
+      // });
+      logger.info(`Registered command ${command.name}`);
     }
   });
   logger.info('Ready!');

@@ -1,7 +1,7 @@
 {
   "name": "react-bot",
   "version": "1.0.0",
-  "description": "Reacts with 🍑 whenever a message contains 'boof'. And other combinations, eventually.",
+  "description": "Reacts with 🍑 whenever a message contains 'boof'. And a few other almost-Malifaux-related things.",
   "main": "bot.js",
   "author": "DZ Liergaard",
   "dependencies": {
