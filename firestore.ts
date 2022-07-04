@@ -5,6 +5,7 @@ import serviceAccount = require('./sps-bot-key.json');
 import { XMLHttpRequest } from 'xmlhttprequest-ts';
 import fs = require('fs');
 import assert = require("assert");
+import internal = require("stream");
 var logger = require('winston');
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -48,11 +49,20 @@ export function random<T>(from: Array<T>): T {
 
 export class ModelInfo {
   name: string;
+  displayName: string;
   imageFiles: string[];
   keywords: string[];
+  cost: number;
 
   constructor(json: object) {
     this.name = json['name'];
+    const title = json['title'];
+    if (title) {
+      this.displayName = `${this.name}, ${title}`;
+    } else {
+      this.displayName = this.name;
+    }
+    this.cost = json['cost'];
     this.imageFiles = json['imageFiles'] ?? json['fileNames']['frontJPGs'].slice();
     this.keywords = json['keywords'];
   }
@@ -69,25 +79,39 @@ class ModelsInfo {
   models = new Map<string, ModelInfo>();
   shipCharacters = new Array<string>();
   keywords = new Array<string>();
+  byStation = new Map<string, Array<string>>();
 
   parseFromJson(json: Map<string, string>) {
     assert(json['shipCharacters'] instanceof Array, `shipCharacters must be of type string[], but was ${typeof json['shipCharacters']}`);
     assert(json['keywords'] instanceof Array, `keywords must be of type string[], but was ${typeof json['keywords']}`);
+    assert(json['byStation'] instanceof Map, `byStation must be of type Map<string, string[]>, but was ${typeof json['byStation']}`);
     this.shipCharacters = json['shipCharacters'];
-    Object.values(json['models']).forEach((model: object) => {
-      this.models[model['name']] = new ModelInfo(model);
-    });
     this.keywords = json['keywords'];
+    this.byStation = json['byStation'];
+    Object.values(json['models']).forEach((model: object) => {
+      const modelInfo = new ModelInfo(model);
+      this.models[modelInfo.displayName] = modelInfo;
+    });
   }
 
-  getUniqueCharacters(count = 1, ship = false): ModelInfo[] {
+  getUniqueCharacters(count = 1, ship = false, station = undefined, cost = 0): ModelInfo[] {
     const results = new Array<ModelInfo>();
     var options = Object.values(this.models);
+    if (this.byStation[station]) {
+      options = this.byStation[station].map((name) => this.models[name]);
+    }
     if (ship) {
       options = [];
       this.shipCharacters.forEach((characterName: string) => {
         options.push(this.models[characterName]);
       });
+    }
+    if (cost > 0) {
+      options = options.filter((op) => op.cost <= cost);
+    }
+    if (options.length <= 0) {
+      logger.warn(`getUniqueCharacters: Found 0 valid options for ${count}, ${ship}, ${station}, and ${cost}`);
+      return [];
     }
     count = Math.min(count, 10, options.length);
     while (results.length < count) {
@@ -221,7 +245,7 @@ function initializeOptions() {
       Object.keys(allModelsJson['units']).forEach((name) => {
         var json = allModelsJson['units'][name];
         var modelInfo = new ModelInfo(json);
-        modelsInfo.models[name] = modelInfo;
+        modelsInfo.models[modelInfo.displayName] = modelInfo;
         if (modelInfo.keywords) {
           modelInfo.keywords.forEach((keyword: string) => {
             if (modelsInfo.keywords.indexOf(keyword) < 0) {
@@ -237,6 +261,11 @@ function initializeOptions() {
             modelInfo.imageFiles.push(url);
           }));
         });
+
+        if (!modelsInfo.byStation[json['station']]) {
+          modelsInfo.byStation[json['station']] = [];
+        }
+        modelsInfo.byStation[json['station']].push(modelInfo.displayName);
 
         switch (json['station']) {
           case 'Minion':
