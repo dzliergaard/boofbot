@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { modelsInfo, random, ModelInfo } from '../firestore';
+import { modelsInfo, ModelInfo } from '../firestore';
 var logger = require('winston');
 
 module.exports = {

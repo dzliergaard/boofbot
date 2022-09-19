@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder, blockQuote } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from 'discord.js';
 import { answeredCollection, unansweredCollection } from '../firestore';
 
 
@@ -30,8 +30,8 @@ module.exports = {
         option.setName("answered")
           .setDescription("Return answered questions instead of unanswered.")
           .setRequired(false))),
-  async execute(interaction: CommandInteraction) {
-    logger.info(`Command options: ${JSON.stringify(interaction.options.getSubcommand())}`);
+  async execute(interaction: ChatInputCommandInteraction) {
+    logger.info(`Command interaction: ${JSON.stringify(interaction.options.getSubcommand())}`);
     await interaction.deferReply();
     switch (interaction.options.getSubcommand()) {
       case 'list':
@@ -47,9 +47,9 @@ module.exports = {
   },
 };
 
-async function _addQuestion(interaction: CommandInteraction) {
+async function _addQuestion(interaction: ChatInputCommandInteraction) {
   var questionsData = {
-    text: interaction.options.getString('question'),
+    text: interaction.options.getMember('question'),
     addedBy: {
       name: interaction.user.username,
       id: interaction.user.id,
@@ -63,29 +63,55 @@ async function _addQuestion(interaction: CommandInteraction) {
   await interaction.editReply(`${interaction.user.username} added question: ${questionsData.text}`)
 }
 
-async function _listQuestions(interaction: CommandInteraction) {
-  var getAnswered = interaction.options.getBoolean('answered');
-  var query = (getAnswered ? answeredCollection : unansweredCollection).orderBy('added');
-  var result = await query.get();
+async function _listQuestions(interaction: ChatInputCommandInteraction) {
+  const getAnswered = interaction.options.getBoolean('answered');
+  const query = (getAnswered ? answeredCollection : unansweredCollection).orderBy('added');
+  const result = await query.get();
   const docs = result.docs;
   var answeredText = getAnswered ? "answered" : "current unanswered";
-  var output = `Here are the ${answeredText} questions:\n`;
+  await interaction.editReply(`Here are the ${answeredText} questions:\n`);
   if (docs.length == 0) {
     await interaction.editReply(`There are no ${answeredText} questions.`);
     return;
   }
   var index = 1;
+  var output = "";
+  var groupCount = 0;
+  var answerRow = new ActionRowBuilder<ButtonBuilder>();
+  var deleteRow = new ActionRowBuilder<ButtonBuilder>();
   for (var doc of docs) {
     var question = doc.data()
-    var questionText = `\n${index++}: ${question.addedBy?.name} asked: \`${question.text}\``;
-    if (output.length + questionText.length > 2000) {
-      await interaction.followUp(output);
+    var questionText = `\n${index}: ${question.addedBy?.name} asked: \`${question.text}\``;
+    if (output.length + questionText.length > 2000 || groupCount >= 5) {
+      await interaction.followUp({ content: output, components: [answerRow, deleteRow] });
       output = "";
+      groupCount = 0;
+      answerRow = new ActionRowBuilder<ButtonBuilder>();
+      deleteRow = new ActionRowBuilder<ButtonBuilder>();
     }
     output += questionText;
+    answerRow.addComponents(
+      new ButtonBuilder({
+        custom_id: `answer-${doc.id}`,
+        label: `☑️ #${index}`,
+        style: ButtonStyle.Primary,
+      }),
+    );
+    deleteRow.addComponents(
+      new ButtonBuilder({
+        custom_id: `delete-${doc.id}`,
+        label: `🗑️ #${index}`,
+        style: ButtonStyle.Danger,
+      }));
+    groupCount++;
+    index++;
   }
 
   if (output.length > 0) {
-    await interaction.followUp(output);
+    await interaction.followUp({
+      content: output,
+      components: [answerRow, deleteRow]
+    });
+
   }
 }

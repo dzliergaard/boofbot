@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 import { modelsInfo } from '../firestore';
 var logger = require('winston');
 
@@ -34,7 +34,7 @@ module.exports = {
         .setDescription("Optionally select the first character.")
         .setRequired(false)
     ),
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     var charOne = interaction.options.getString("personone");
     const getCharacters = charOne ? 1 : 2;
     const characters = modelsInfo.getUniqueCharacters(getCharacters, true);

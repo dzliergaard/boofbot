@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 import { modelsInfo, random, ModelInfo } from '../firestore';
 var logger = require('winston');
 
@@ -16,7 +16,7 @@ module.exports = {
         .setDescription("Optionally choose a keyword.")
         .setRequired(false)
     ),
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const inputModel = interaction.options.getString("model");
     const inputKeyword = interaction.options.getString("keyword");
 

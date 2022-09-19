@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 var logger = require('winston');
 
 const nameParts = {
@@ -130,7 +130,7 @@ module.exports = {
         .setDescription("Your last name.")
         .setRequired(true)
     ),
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const firstName = interaction.options.getString("first-name").trim().toUpperCase();
     const lastName = interaction.options.getString("last-name").trim().toUpperCase();
 

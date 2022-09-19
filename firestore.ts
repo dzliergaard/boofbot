@@ -233,7 +233,7 @@ function initializeOptions() {
       fs.rmSync('modelList.json');
     }
   }
-  const allModelsRef = ref(storage, 'gs://m3e-crew-builder-22534.appspot.com/allmodels-app-titles.json');
+  const allModelsRef = ref(storage, 'gs://m3e-crew-builder-22534.appspot.com/allmodels-app.json');
   var allModelsJson = {};
   const xhr = new XMLHttpRequest();
   getDownloadURL(allModelsRef).then(async (url) => {

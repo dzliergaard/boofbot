@@ -1,9 +1,8 @@
 import fs = require('fs');
-import { Client, Collection, Intents, Message } from "discord.js";
-import { SlashCommandBuilder } from '@discordjs/builders';
+import { Client, Collection, GatewayIntentBits, Message, SlashCommandBuilder } from "discord.js";
 var logger = require('winston');
 var messageConfig = require('./react-config.json');
-import { guildID, token } from './config';
+import { token } from './config';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -14,9 +13,9 @@ logger.level = 'debug';
 
 const client = new Client({
   intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
   ]
 });
 
@@ -55,11 +54,6 @@ client.once('ready', async () => {
       var commandFile = require(`./commands/${file}`);
       const command: SlashCommandBuilder = commandFile.data;
       commands.set(command.name, commandFile);
-      // const builtCommand = await application.commands.create({
-      //   name: command.name,
-      //   description: command.description,
-      //   defaultPermission: command.defaultPermission,
-      // });
       logger.info(`Registered command ${command.name}`);
     }
   });

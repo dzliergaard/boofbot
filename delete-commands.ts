@@ -1,7 +1,7 @@
 import fs = require('fs');
-import { REST } from '@discordjs/rest';
+import { REST } from 'discord.js';
 import { Routes } from 'discord-api-types/v9';
-import { clientID, guildID, token } from './config';
+import { clientID, token } from './config';
 
 const commands = [];
 const permissions = {};

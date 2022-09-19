@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 import { unansweredCollection, answeredCollection } from '../firestore';
 
 var logger = require('winston');
@@ -10,7 +10,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('fnfd-admin')
     .setDescription('Admin-only actions on the FNFD question queue.')
-    .setDefaultPermission(false)
+    .setDefaultMemberPermissions(0)
     .addSubcommand(new SlashCommandSubcommandBuilder()
       .setName("mark-answered")
       .setDescription("Mark question(s) as answered. Tyrants/owners only.")
@@ -25,7 +25,8 @@ module.exports = {
       .setDescription("Banish a question for being stupid.")
       .addIntegerOption(option => option.setName('index')
         .setDescription("Index of the question to banish as returned by `/fnfd list`.")
-        .setRequired(true))),
+        .setRequired(true))
+    ),
   permissions: [
     {
       id: '722446885423546420',
@@ -48,7 +49,7 @@ module.exports = {
       permission: true,
     },
   ],
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     logger.info(`Command options: ${JSON.stringify(interaction.options.getSubcommand())}`);
     await interaction.deferReply();
     switch (interaction.options.getSubcommand()) {
@@ -65,7 +66,7 @@ module.exports = {
   },
 }
 
-async function _deleteQuestion(interaction: CommandInteraction) {
+async function _deleteQuestion(interaction: ChatInputCommandInteraction) {
   const setUnanswered = interaction.options.getBoolean('unmark') ?? false;
 
   var query = (setUnanswered ? answeredCollection : unansweredCollection).orderBy('added');
@@ -84,7 +85,7 @@ async function _deleteQuestion(interaction: CommandInteraction) {
   await interaction.editReply(`Banished ${interaction.options.getInteger('index')} for being a bad question.`);
 }
 
-async function _markAnswered(interaction: CommandInteraction) {
+async function _markAnswered(interaction: ChatInputCommandInteraction) {
   const setUnanswered = interaction.options.getBoolean('unmark') ?? false;
 
   var query = (setUnanswered ? answeredCollection : unansweredCollection).orderBy('added');
