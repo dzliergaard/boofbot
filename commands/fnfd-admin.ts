@@ -107,5 +107,4 @@ async function _markAnswered(interaction: ChatInputCommandInteraction) {
   await question.ref.delete();
 
   await interaction.editReply(`Marked question ${inputIndex} as answered.`);
-
 }

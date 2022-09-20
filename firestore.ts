@@ -36,7 +36,8 @@ admin.initializeApp({
     clientEmail: serviceAccount.client_email,
   })
 });
-const db = admin.firestore();
+
+export const db = admin.firestore();
 const questionsDoc = db.doc("questions/questions");
 
 export const storage = getStorage(app);
