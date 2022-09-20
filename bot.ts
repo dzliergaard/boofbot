@@ -1,5 +1,5 @@
 import fs = require('fs');
-import { Client, Collection, GatewayIntentBits, Message, SlashCommandBuilder } from "discord.js";
+import { ButtonInteraction, Client, Collection, GatewayIntentBits, Message, SlashCommandBuilder } from "discord.js";
 var logger = require('winston');
 var messageConfig = require('./react-config.json');
 import { token } from './config';
@@ -24,6 +24,7 @@ const client = new Client({
 client.login(token);
 
 var commands = new Collection<String, any>();
+var buttons = new Collection<String, any>();
 var emojiCodes = {};
 
 // When the client is ready, run this code (only once)
@@ -56,6 +57,14 @@ client.once('ready', async () => {
       commands.set(command.name, commandFile);
       logger.info(`Registered command ${command.name}`);
     }
+
+    const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.js'));
+    for (var index in buttonFiles) {
+      const file = buttonFiles[index];
+      var buttonFile = require(`./buttons/${file}`);
+      buttons.set(buttonFile.customIdPrefix, buttonFile);
+      logger.info(`Registered button ${buttonFile.customIdPrefix}`);
+    }
   });
   logger.info('Ready!');
 });
@@ -63,7 +72,25 @@ client.once('ready', async () => {
 var lastInteraction = new Date();
 lastInteraction.setMinutes(lastInteraction.getMinutes() - 5);
 
+async function _handleButtonPress(interaction: ButtonInteraction) {
+  logger.info(`Handling button press ${interaction.customId}. Checking against ${buttons.size} prefixes.`);
+
+  const prefix = interaction.customId.substring(0, interaction.customId.indexOf('-'));
+
+  const button = buttons.get(prefix);
+  if (!button) {
+    return await interaction.reply({ content: `Error executing button press ${prefix}.`, ephemeral: true });
+  }
+
+  logger.info(`Executing ${prefix} for ${interaction.customId}`);
+
+  button.execute(interaction);
+}
+
 client.on('interactionCreate', async interaction => {
+  if (interaction.isButton()) {
+    return _handleButtonPress(interaction);
+  }
   if (!interaction.isCommand()) return;
   logger.info(`Processing interaction ${interaction.commandName} with options ${JSON.stringify(interaction.options)}`);
 

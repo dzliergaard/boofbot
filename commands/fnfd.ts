@@ -3,7 +3,6 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/b
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChatInputCommandInteraction, Collection, ComponentType, Interaction, PermissionsBitField, Role } from 'discord.js';
 import { answeredCollection, unansweredCollection, db } from '../firestore';
 
-
 var logger = require('winston');
 
 const adminRoles = [
@@ -125,60 +124,4 @@ async function _listQuestions(interaction: ChatInputCommandInteraction) {
       components: [answerRow, deleteRow],
     });
   }
-
-  // Respond to button presses to mark questions as answered or delete them.
-
-  const filter = i => i.customId.startsWith("answer-") || i.customId.startsWith("delete-");
-  const collector = interaction.channel.createMessageComponentCollector({
-    filter: filter,
-    time: 15000,
-    componentType: ComponentType.Button
-  });
-  collector.on('collect', i => {
-    var hasAdminPermissions = false;
-
-    var roles: Collection<string, Role> = i.member.roles.valueOf() as Collection<string, Role>;
-    roles.forEach((role, key) => {
-      if (adminRoles.indexOf(role.id) >= 0) {
-        hasAdminPermissions = true;
-      }
-    });
-    if (!hasAdminPermissions) {
-      i.reply({
-        content: "You do not have admin permissions on FNFD questions.",
-        ephemeral: true,
-      });
-      return;
-    }
-
-    if (i.customId.startsWith("answer-")) {
-      _markAnswered(i);
-    } else if (i.customId.startsWith("delete-")) {
-      _deleteQuestion(i);
-    }
-  });
-}
-
-async function _markAnswered(interaction: ButtonInteraction) {
-  const docId = interaction.customId.replace('answer-', '');
-  const docRef = db.doc(docId);
-  const doc = await docRef.get();
-  const question = doc.data();
-
-  await answeredCollection.doc().set(question);
-  // Delete the original question in unanswered.
-  await docRef.delete();
-
-  await interaction.reply(`${interaction.user.username} \`${question.text}\` as answered.`);
-}
-
-async function _deleteQuestion(interaction: ButtonInteraction) {
-  const docId = interaction.customId.replace('delete-', '');
-  const docRef = db.doc(docId);
-  const doc = await docRef.get();
-  const question = doc.data();
-
-  await docRef.delete();
-
-  await interaction.reply(`${interaction.user.username} deleted \`${question.text}\` for being a bad question.`)
 }

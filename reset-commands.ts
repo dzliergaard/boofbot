@@ -2,7 +2,7 @@ import fs = require('fs');
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { clientID, guildID, token } from './config';
-import { Client, Intents } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 
 const commands = [];
 const permissions = {};
@@ -22,9 +22,9 @@ const rest = new REST({ version: '9' }).setToken(token);
 // Get existing commands.
 const client = new Client({
   intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
   ]
 });
 
@@ -44,7 +44,6 @@ client.once('ready', async () => {
 
       console.log(`Existing commands in guild ${guildID}: ${response.map((command) => command.name).join(', ')}`);
 
-      client.application.commands.set([]);
       const globalResponse = await rest.get(
         Routes.applicationCommands(clientID),
       );
