@@ -1,5 +1,5 @@
 import fs = require('fs');
-import { ButtonInteraction, Client, Collection, GatewayIntentBits, Message, SlashCommandBuilder } from "discord.js";
+import { ButtonInteraction, Client, Collection, GatewayIntentBits, Message, Role, SlashCommandBuilder } from "discord.js";
 var logger = require('winston');
 var messageConfig = require('./react-config.json');
 import { token } from './config';
@@ -76,15 +76,37 @@ async function _handleButtonPress(interaction: ButtonInteraction) {
   logger.info(`Handling button press ${interaction.customId}. Checking against ${buttons.size} prefixes.`);
 
   const prefix = interaction.customId.substring(0, interaction.customId.indexOf('-'));
-
   const button = buttons.get(prefix);
   if (!button) {
     return await interaction.reply({ content: `Error executing button press ${prefix}.`, ephemeral: true });
   }
 
+  if (!_checkAdminPermissions(interaction, button)) {
+    interaction.reply({
+      content: "You don't have permission to do that.",
+      ephemeral: true,
+    });
+    return false;
+  }
+
   logger.info(`Executing ${prefix} for ${interaction.customId}`);
 
   button.execute(interaction);
+}
+
+function _checkAdminPermissions(interaction: ButtonInteraction, buttonModule: any) {
+  if (!buttonModule.requiredRoles) {
+    return true;
+  }
+  var hasAdminPermissions = false;
+  var roles: Collection<string, Role> = interaction.member.roles.valueOf() as Collection<string, Role>;
+  roles.forEach((role) => {
+    if (buttonModule.requiredRoles.indexOf(role.id) >= 0) {
+      hasAdminPermissions = true;
+    }
+  });
+
+  return hasAdminPermissions;
 }
 
 client.on('interactionCreate', async interaction => {

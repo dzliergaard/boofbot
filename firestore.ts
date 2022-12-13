@@ -85,10 +85,9 @@ class ModelsInfo {
   parseFromJson(json: Map<string, string>) {
     assert(json['shipCharacters'] instanceof Array, `shipCharacters must be of type string[], but was ${typeof json['shipCharacters']}`);
     assert(json['keywords'] instanceof Array, `keywords must be of type string[], but was ${typeof json['keywords']}`);
-    assert(json['byStation'] instanceof Map, `byStation must be of type Map<string, string[]>, but was ${typeof json['byStation']}`);
     this.shipCharacters = json['shipCharacters'];
     this.keywords = json['keywords'];
-    this.byStation = json['byStation'];
+    this.byStation = json['byStation'] as Map<string, string[]>;
     Object.values(json['models']).forEach((model: object) => {
       const modelInfo = new ModelInfo(model);
       this.models[modelInfo.displayName] = modelInfo;

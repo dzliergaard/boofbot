@@ -13,6 +13,9 @@ module.exports = {
         const docId = interaction.customId.replace('answer-', '');
         const docRef = db.doc(docId);
         const doc = await docRef.get();
+        if (!doc.exists) {
+            return await interaction.reply(`Question has already been deleted/moved.`);
+        }
         const question = doc.data();
 
         await answeredCollection.doc().set(question);
