@@ -11,7 +11,6 @@ module.exports = {
     .setDescription('Defines "boof".'),
   async execute(interaction: CommandInteraction) {
     var booflink = hyperlink("boof", boofurl);
-    logger.info(`Booflink: ${booflink}`);
     var text = `<@!${interaction.user.id}>  would very much like you to know: ${booflink}`;
 
     await interaction.reply(text);

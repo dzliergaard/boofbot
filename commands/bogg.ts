@@ -4,7 +4,7 @@ import { CommandInteraction } from 'discord.js';
 var logger = require('winston');
 
 const searchUrlBase = "https://www.google.com/search?q=florida+man&tbm=nws&start=";
-const titleMatcher: RegExp = /div class="[\w ]*">((?:[^<>]*)Florida [Mm]an(?:[^<>]*))<\/div/g;
+const titleMatcher: RegExp = /div class="[\w ]*">((?:[^<>]*)florida man(?:[^<>]*))<\/div/gi;
 
 var currentResults: Array<string> = [];
 
@@ -16,7 +16,7 @@ function htmlHtmlString(str: string) {
 }
 
 const getSearchResults: () => Promise<void> = async () => {
-  const index = Math.floor(Math.random() * 10) * 10;
+  const index = Math.floor(Math.random() * 50) * 10;
 
   let searchUrl = searchUrlBase + `${index}`;
   logger.info(`Fetching ${searchUrl}`)
@@ -31,10 +31,11 @@ const getSearchResults: () => Promise<void> = async () => {
       if (!match[1]) {
         return;
       }
-      if (match[1].toLowerCase().indexOf("florida man") < 0) {
+      if (match[1].match(/florida man/i)) {
         logger.warn(`No 'Florida Man' found in title ${match[1]}`);
+        return;
       }
-      var title = match[1].toLowerCase().replace(/( a )?florida man/, "**Uncle Bogg**");
+      var title = match[1].replace(/( a )?florida man/i, "**Uncle Bogg**");
       currentResults.push(title);
     });
 
